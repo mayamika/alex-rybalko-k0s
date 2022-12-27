@@ -1,0 +1,21 @@
+---
+- hosts: initial_controller
+  become: true
+  gather_facts: true
+  name: Configure initial controller node
+  roles:
+    - initial_controller
+
+- hosts: controller
+  become: true
+  gather_facts: true
+  serial: 1
+  name: Configure controller nodes
+  roles:
+    - controller
+
+- hosts: worker
+  become: true
+  name: Configure worker nodes
+  roles:
+    - worker

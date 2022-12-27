@@ -1,0 +1,47 @@
+- name: Check that the k0s binary exists
+  register: k0s_binary_stat
+  stat:
+    path: "{{ k0s_binary_path }}"
+
+- name: Install k0s
+  become: true
+  block:
+    - name: Download install script
+      ansible.builtin.uri:
+        url: https://get.k0s.sh
+        dest: ~/install-k0s.sh
+        mode: 0700
+        status_code:
+          - 200
+          - 304
+
+    - name: Run install script
+      ansible.builtin.shell: sh ~/install-k0s.sh
+  when: not k0s_binary_stat.stat.exists
+
+- name: Create k0s Directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  loop:
+    - "{{ k0s_config_dir }}"
+    - "{{ k0s_data_dir }}"
+    - "{{ k0s_libexec_dir }}"
+
+- name: Generate default k0s config
+  become: true
+  register: default_k0s_config
+  command: k0s default-config
+
+- name: Store default k0s config
+  become: true
+  copy:
+    dest: "{{ k0s_config_dir }}/k0s.yaml"
+    content: "{{ default_k0s_config.stdout }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0600

@@ -1,0 +1,12 @@
+[initial_controller]
+${initial_controller} ansible_user=k0s
+
+[controller]
+%{ for addr in controllers ~}
+${addr} ansible_user=k0s
+%{ endfor ~}
+
+[worker]
+%{ for addr in workers ~}
+${addr} ansible_user=k0s
+%{ endfor ~}
